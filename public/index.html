@@ -32,6 +32,12 @@
             <option>هایپرمارکت</option>
             <option>فروشگاه زنجیره‌ای</option>
           </select>
+          <select id="source">
+            <option value="">همهٔ منابع</option>
+            <option value="neshan">نشان</option>
+            <option value="google">گوگل</option>
+            <option value="both">هر دو منبع</option>
+          </select>
         </div>
         <div class="row">
           <span id="count" class="muted"></span>
@@ -46,8 +52,8 @@
 
   <div id="empty" hidden>
     <h2>هنوز داده‌ای جمع‌آوری نشده</h2>
-    <p>ابتدا اسکریپت جمع‌آوری را با کلید API نشان اجرا کنید:</p>
-    <pre dir="ltr">NESHAN_API_KEY=service.xxxx npm run collect</pre>
+    <p>ابتدا اسکریپت جمع‌آوری را با کلید API نشان و/یا گوگل اجرا کنید:</p>
+    <pre dir="ltr">NESHAN_API_KEY=service.xxxx GOOGLE_MAPS_API_KEY=AIza... npm run collect</pre>
     <p>سپس این صفحه را دوباره باز کنید.</p>
   </div>
 

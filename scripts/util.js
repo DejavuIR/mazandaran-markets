@@ -13,11 +13,11 @@ const RELEVANT = /سوپر|مارکت|market|هایپر|هايپر|فروشگا�
 // چیزهایی که اسمشان شبیه است ولی سوپرمارکت نیستند
 const EXCLUDE = /پوشاک|لباس|کفش|موبایل|لوازم\s*خانگی|مبل|آهن|ساختمانی|خودرو|یدکی|کتاب|لوازم\s*التحریر|طلا|عینک|ابزار|کامپیوتر|دارو|آرایشی|بهداشتی\s*آرایشی|فرش|پرده|کابینت|چینی|بلور|اسباب\s*بازی|موتور|دوچرخه|گل\s*فروشی|پت\s*شاپ/;
 
-function isRelevant(item) {
-  const text = `${item.title || ""} ${item.type || ""} ${item.category || ""}`;
-  if (!RELEVANT.test(text)) return false;
+// typeMatched: منبع (مثلاً گوگل) خودش نوع مکان را سوپرمارکت/خواربار گفته
+function isRelevant(item, { typeMatched = false } = {}) {
   if (EXCLUDE.test(item.title || "")) return false;
-  return true;
+  if (typeMatched) return true;
+  return RELEVANT.test(`${item.title || ""} ${item.type || ""} ${item.category || ""}`);
 }
 
 function classify(item) {

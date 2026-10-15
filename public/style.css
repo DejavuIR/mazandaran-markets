@@ -102,6 +102,14 @@ button:hover { filter: brightness(1.08); }
 }
 .tag.هایپرمارکت { color: var(--hyper); }
 .tag.فروشگاه-زنجیره‌ای { color: var(--chain); }
+#list .meta { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.src {
+  font-size: 11px;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-inline-end: 4px;
+}
 #more { margin: 10px auto; display: block; }
 #more[hidden] { display: none; }
 
