@@ -60,8 +60,11 @@ jobs:
             node -e '
               const d = require("./data/stores.json");
               const lines = [`## ${d.count} فروشگاه`, ""];
+              const hints = { 480: "کلید پیدا نشد", 481: "سهمیه تمام شده", 483: "کلید باید از نوع «سرویس» باشد", 484: "محدودیت IP/دامنه روی کلید", 485: "سرویس «جستجو» برای کلید فعال نیست" };
               for (const [id, s] of Object.entries(d.sources || {})) {
                 lines.push(`- ${s.label}: ${s.complete ? "کامل" : "ناقص — " + (s.error || "")} (${s.requests} درخواست جدید)`);
+                const code = (s.error || "").match(/API (\d+)/)?.[1];
+                if (hints[code]) lines.push(`  - **راه‌حل:** ${hints[code]}`);
               }
               require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
             '
@@ -71,7 +74,11 @@ jobs:
 
       - name: Commit data
         run: |
-          [ -f data/stores.json ] || exit 1
+          # اگر هیچ فروشگاهی جمع نشد، لیست قبلی را خراب نکن و اجرا را ناموفق اعلام کن
+          if [ ! -f data/stores.json ] || [ "$(node -p 'require("./data/stores.json").count')" = "0" ]; then
+            echo "::error::هیچ فروشگاهی جمع نشد. علت در مرحلهٔ Collect stores و خلاصهٔ اجرا آمده است."
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add data/stores.json

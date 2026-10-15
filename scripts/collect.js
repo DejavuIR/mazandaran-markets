@@ -58,6 +58,15 @@ function searchPoints() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// کدهای خطای اختصاصی نشان — https://platform.neshan.org
+const NESHAN_ERRORS = {
+  480: "کلید API نشان پیدا نشد؛ کلید را درست کپی کنید.",
+  481: "سهمیهٔ کلید نشان تمام شده؛ بعداً دوباره اجرا کنید تا از همین‌جا ادامه دهد.",
+  483: "نوع کلید اشتباه است؛ کلید باید از نوع «سرویس» (service.) باشد، نه «وب».",
+  484: "این آدرس/IP در لیست مجاز کلید نیست؛ محدودیت IP یا دامنه را در پنل نشان بردارید.",
+  485: "سرویس «جستجو» برای این کلید فعال نیست؛ در پنل نشان، کلید را ویرایش و تیک «جستجو» (Search) را بزنید.",
+};
+
 async function request(provider, key, term, point, pageToken) {
   const id = [provider.id, term, point.lat, point.lng, point.half, pageToken || "", args.phone ? "phone" : ""].join("|");
   const cacheFile = path.join(CACHE_DIR, `${provider.id}-${crypto.createHash("md5").update(id).digest("hex")}.json`);
@@ -70,7 +79,8 @@ async function request(provider, key, term, point, pageToken) {
       fs.writeFileSync(cacheFile, JSON.stringify(r.data));
       return { data: r.data, cached: false };
     }
-    if (r.error === 429 || r.error >= 500) {
+    // ۴۸۲ نشان یعنی سرعت درخواست‌ها زیاد است
+    if (r.error === 429 || r.error === 482 || r.error >= 500) {
       const wait = 2000 * 2 ** attempt;
       console.warn(`\n  ⚠ ${provider.label}: خطای ${r.error} — ${wait / 1000} ثانیه صبر و تلاش دوباره`);
       await sleep(wait);
@@ -182,7 +192,9 @@ async function main() {
     } catch (e) {
       status[provider.id] = { complete: false, requests, error: e.message };
       console.error(`\n  ✖ ${e.message}`);
-      if (e.status === 401 || e.status === 403) {
+      if (provider.id === "neshan" && NESHAN_ERRORS[e.status]) {
+        console.error(`  ${NESHAN_ERRORS[e.status]}`);
+      } else if (e.status === 401 || e.status === 403) {
         console.error("  کلید API نامعتبر است یا سرویس جستجو برایش فعال نشده (برای گوگل: Places API (New) و حساب پرداخت).");
       } else {
         console.error("  نتایج تا این لحظه ذخیره می‌شود. بعداً دوباره اجرا کنید تا از همین‌جا ادامه دهد.");
