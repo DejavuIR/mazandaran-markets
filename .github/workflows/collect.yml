@@ -1,0 +1,87 @@
+# جمع‌آوری لیست فروشگاه‌ها با یک دکمه:
+# Actions → «جمع‌آوری لیست فروشگاه‌ها» → Run workflow
+# کلیدها از Settings → Secrets and variables → Actions خوانده می‌شوند.
+name: جمع‌آوری لیست فروشگاه‌ها
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "نوع جمع‌آوری"
+        type: choice
+        options: [full, quick]
+        default: full
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # پاسخ‌های قبلی نگه داشته می‌شوند تا اگر سقف روزانهٔ API تمام شد،
+      # اجرای بعدی از همان‌جا ادامه دهد
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: api-cache-${{ github.run_id }}
+          restore-keys: api-cache-
+
+      - name: Collect stores
+        id: collect
+        continue-on-error: true
+        env:
+          NESHAN_API_KEY: ${{ secrets.NESHAN_API_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          if [ "${{ inputs.mode }}" = "quick" ]; then
+            node scripts/collect.js --quick
+          else
+            node scripts/collect.js
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f data/stores.json ]; then
+            node -e '
+              const d = require("./data/stores.json");
+              const lines = [`## ${d.count} فروشگاه`, ""];
+              for (const [id, s] of Object.entries(d.sources || {})) {
+                lines.push(`- ${s.label}: ${s.complete ? "کامل" : "ناقص — " + (s.error || "")} (${s.requests} درخواست جدید)`);
+              }
+              require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+            '
+          else
+            echo "## هیچ داده‌ای جمع نشد — خطای مرحلهٔ قبل را ببینید" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Commit data
+        run: |
+          [ -f data/stores.json ] || exit 1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/stores.json
+          if git diff --cached --quiet; then
+            echo "داده تغییری نکرده."
+          else
+            git commit -m "به‌روزرسانی لیست فروشگاه‌ها"
+            git push
+          fi
+
+  deploy:
+    needs: collect
+    uses: ./.github/workflows/pages.yml

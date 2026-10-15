@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_call: # از collect.yml بعد از جمع‌آوری صدا زده می‌شود
 
 permissions:
   contents: read
@@ -23,6 +24,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # آخرین نسخهٔ شاخه، تا دادهٔ تازه‌ای که collect.yml commit کرده هم بیاید
+          ref: ${{ github.ref }}
       - name: Build site
         run: |
           mkdir -p _site/data
