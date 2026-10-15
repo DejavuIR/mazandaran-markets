@@ -85,6 +85,8 @@ function renderMore() {
       document.querySelectorAll("#list li.active").forEach((x) => x.classList.remove("active"));
       li.classList.add("active");
       const m = markers.get(s.id);
+      // روی گوشی نقشه بالای لیست است؛ اول به آن برگرد
+      if (window.matchMedia("(max-width: 760px)").matches) $("map").scrollIntoView({ behavior: "smooth" });
       cluster.zoomToShowLayer(m, () => m.openPopup());
     };
     frag.appendChild(li);
@@ -134,7 +136,12 @@ function exportCsv() {
 }
 
 async function init() {
-  const res = await fetch("/api/stores");
+  let res;
+  try {
+    res = await fetch("data/stores.json", { cache: "no-cache" });
+  } catch {
+    res = { ok: false };
+  }
   if (!res.ok) {
     $("empty").hidden = false;
     return;
@@ -175,3 +182,37 @@ $("more").addEventListener("click", renderMore);
 $("export").addEventListener("click", exportCsv);
 
 init();
+
+// نصب روی گوشی (PWA)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
+let installPrompt;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  installPrompt = e;
+  $("install").hidden = false;
+});
+$("install").addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  $("install").hidden = true;
+});
+
+// آیفون دکمهٔ نصب خودکار ندارد؛ راهنما را یک بار نشان بده
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+let hintSeen = false;
+try {
+  hintSeen = localStorage.getItem("ios-hint") === "1";
+} catch {}
+if (isIos && !standalone && !hintSeen) $("ios-hint").hidden = false;
+$("ios-hint-close").addEventListener("click", () => {
+  $("ios-hint").hidden = true;
+  try {
+    localStorage.setItem("ios-hint", "1");
+  } catch {}
+});
