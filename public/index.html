@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سوپرمارکت‌های مازندران</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="vendor/MarkerCluster.css" />
+  <link rel="stylesheet" href="vendor/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>سوپرمارکت‌ها و هایپرمارکت‌های مازندران</h1>
+      <p id="meta" class="muted">در حال بارگذاری…</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="filters">
+        <input id="q" type="search" placeholder="جستجوی نام، آدرس یا محله…" />
+        <div class="row">
+          <select id="city"><option value="">همهٔ شهرها</option></select>
+          <select id="type">
+            <option value="">همهٔ انواع</option>
+            <option>سوپرمارکت</option>
+            <option>هایپرمارکت</option>
+            <option>فروشگاه زنجیره‌ای</option>
+          </select>
+        </div>
+        <div class="row">
+          <span id="count" class="muted"></span>
+          <button id="export" type="button">خروجی Excel</button>
+        </div>
+      </div>
+      <ul id="list"></ul>
+      <button id="more" type="button" hidden>نمایش بیشتر</button>
+    </aside>
+    <div id="map"></div>
+  </main>
+
+  <div id="empty" hidden>
+    <h2>هنوز داده‌ای جمع‌آوری نشده</h2>
+    <p>ابتدا اسکریپت جمع‌آوری را با کلید API نشان اجرا کنید:</p>
+    <pre dir="ltr">NESHAN_API_KEY=service.xxxx npm run collect</pre>
+    <p>سپس این صفحه را دوباره باز کنید.</p>
+  </div>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/leaflet.markercluster.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

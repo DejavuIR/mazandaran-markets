@@ -1,0 +1,13 @@
+{
+  "name": "mazandaran-markets",
+  "version": "1.0.0",
+  "description": "لیست سوپرمارکت‌ها و هایپرمارکت‌های استان مازندران از Neshan API",
+  "private": true,
+  "scripts": {
+    "collect": "node scripts/collect.js",
+    "collect:quick": "node scripts/collect.js --quick",
+    "plan": "node scripts/collect.js --plan",
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" }
+}
